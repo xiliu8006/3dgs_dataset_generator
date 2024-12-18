@@ -1,12 +1,26 @@
-# This code is for generating 3DGS-Enhancer dataset
-Xi Liu*, Chaoyi Zhou*, Siyu Huang (* indicates equal contribution)<br>
+# 3DGS-Enhancer Dataset Generation
 
-This repository contains the official authors implementation associated with the paper "3DGS-Enhancer: Enhancing Unbounded 3D GaussianSplatting with View-consistent 2D Diffusion Priors". We provide this repo to build the paired dataset. Our dataset is based on the [DL3DV-10K](https://dl3dv-10k.github.io/DL3DV-10K/) DATASET and this codebase is based on [3D Gaussian splatting](https://github.com/graphdeco-inria/gaussian-splatting). Thanks for their great work!
+**Authors:** Xi Liu\*, Chaoyi Zhou\*, Siyu Huang (* indicates equal contribution)
 
-If you think this code base is helpful for your paper, please cite these three papers.
+---
 
-# we provide the shell to generate dataset, plesae modify the shell based on your own servers environment.
-``shell
+This repository contains the official implementation from the authors of the paper:  
+**"3DGS-Enhancer: Enhancing Unbounded 3D Gaussian Splatting with View-Consistent 2D Diffusion Priors."**
+
+We provide the resources here to facilitate the generation of paired datasets. Our dataset is built upon the [DL3DV-10K](https://dl3dv-10k.github.io/DL3DV-10K/) dataset, and this codebase is derived from the [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting) project. We extend our gratitude to the developers of these works for their significant contributions.
+
+If you find this codebase helpful for your research, please consider citing the three papers mentioned:
+---
+
+## How to Generate the Dataset
+
+We provide a shell script to help generate the dataset. Please ensure that you modify the script to suit your server environment.
+
+### Command:
+```bash
 bash train_multi_nodes.sh
-``
+```
 
+### Setting:
+This dataset will produce paired results for 3, 6, 9, or 24 views. You can modify the --num_samples argument in the train_render.py script to specify the desired number of views.
+The rendering results can be matched with the ground truth images using their filenames. Reference view images will include the suffix _ref in their filenames.
