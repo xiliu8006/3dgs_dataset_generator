@@ -13,7 +13,7 @@ We provide the resources here to facilitate the generation of paired datasets. O
 
 ## How to Generate the Dataset
 
-We provide a shell script to help generate the dataset. Please ensure that you modify the script to suit your server environment.
+We provide a shell script to help generate the dataset. Please ensure that you modify the script to suit your server environment. Please download the DL3DV from [Here](https://dl3dv-10k.github.io/DL3DV-10K/) and highly recommend to download the Colmap files with 960P resolution.
 
 ### Command:
 ```bash
