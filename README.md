@@ -5,9 +5,10 @@
 ---
 
 This repository contains the official implementation from the authors of the paper:  
-**"3DGS-Enhancer: Enhancing Unbounded 3D Gaussian Splatting with View-Consistent 2D Diffusion Priors."**
+"3DGS-Enhancer: Enhancing Unbounded 3D Gaussian Splatting with View-Consistent 2D Diffusion Priors."
 
-We provide the resources here to facilitate the generation of paired datasets. Our dataset is built upon the [DL3DV-10K](https://dl3dv-10k.github.io/DL3DV-10K/) dataset, and this codebase is derived from the [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting) project. We extend our gratitude to the developers of these works for their significant contributions.
+We provide the resources here to facilitate the generation of paired datasets. Our dataset is built upon the [DL3DV-10K](https://dl3dv-10k.github.io/DL3DV-10K/) dataset, and this codebase is derived from the [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting) project. We thank the developers of these works for their significant contributions.
+
 ---
 
 ## How to Generate the Dataset
