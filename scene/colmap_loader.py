@@ -153,6 +153,24 @@ def read_points3D_binary(path_to_model_file):
             errors[p_id] = error
     return xyzs, rgbs, errors
 
+def read_points3D_binary_visible(path_to_model_file, image_ids):
+    """Returns the xyz and rgb of the points whose track contains one of `image_ids`."""
+    xyzs, rgbs = [], []
+    with open(path_to_model_file, "rb") as fid:
+        num_points = read_next_bytes(fid, 8, "Q")[0]
+        for _ in range(num_points):
+            binary_point_line_properties = read_next_bytes(
+                fid, num_bytes=43, format_char_sequence="QdddBBBd")
+            track_length = read_next_bytes(
+                fid, num_bytes=8, format_char_sequence="Q")[0]
+            track_elems = read_next_bytes(
+                fid, num_bytes=8*track_length,
+                format_char_sequence="ii"*track_length)
+            if image_ids.intersection(track_elems[0::2]):
+                xyzs.append(binary_point_line_properties[1:4])
+                rgbs.append(binary_point_line_properties[4:7])
+    return np.array(xyzs).reshape(-1, 3), np.array(rgbs).reshape(-1, 3)
+
 def read_intrinsics_text(path):
     """
     Taken from https://github.com/colmap/colmap/blob/dev/scripts/python/read_del.py

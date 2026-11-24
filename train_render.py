@@ -8,7 +8,8 @@ parser.add_argument("--output_path", type=str)
 parser.add_argument("--num_samples", nargs="+", type=int, default=[3, 6, 9, 24])
 parser.add_argument("--use_lr",action="store_true")
 parser.add_argument("--port", type=int)
+parser.add_argument("--rand_init", action="store_true", help="random point init instead of the COLMAP points seen by the input views")
 
 args = parser.parse_args()
 
-train_render_gss(args.scene_path, args.output_path, args.num_samples, args.use_lr, args.port)
+train_render_gss(args.scene_path, args.output_path, args.num_samples, args.use_lr, args.port, args.rand_init)

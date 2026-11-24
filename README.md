@@ -22,6 +22,7 @@ bash train_multi_nodes.sh
 
 ### Setting:
 This dataset will produce paired results for 3, 6, 9, or 24 views. You can modify the --num_samples argument in the train_render.py script to specify the desired number of views.
+By default the 3DGS is initialized from the COLMAP points seen by the input views; add `--rand_init` for a random initialization.
 The rendering results can be matched with the ground truth images using their filenames. Reference view images will include the suffix _ref in their filenames.
 
 ### acknowledgement

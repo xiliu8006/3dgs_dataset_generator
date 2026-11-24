@@ -14,7 +14,8 @@ import sys
 from PIL import Image
 from typing import NamedTuple
 from scene.colmap_loader import read_extrinsics_text, read_intrinsics_text, qvec2rotmat, \
-    read_extrinsics_binary, read_intrinsics_binary, read_points3D_binary, read_points3D_text
+    read_extrinsics_binary, read_intrinsics_binary, read_points3D_binary, read_points3D_text, \
+    read_points3D_binary_visible
 from utils.graphics_utils import getWorld2View2, focal2fov, fov2focal
 import numpy as np
 import json
@@ -227,10 +228,8 @@ def readColmapSceneInfo(path, images, eval, model_path, llffhold=8, N_sparse = -
                 train_cam_infos = [c for idx, c in enumerate(cam_infos) if idx in idx_train]
                 a = 1
             else:
-                idx = list(range(len(train_cam_infos)))
-                idx_train = np.linspace(0, len(train_cam_infos) - 1, N_sparse)
-                idx_train = [round(i) for i in idx_train]
-                train_cam_infos = [c for idx, c in enumerate(train_cam_infos) if idx in idx_train]
+                step = max(1, len(train_cam_infos) // N_sparse)
+                train_cam_infos = train_cam_infos[::step][:N_sparse]
 
     else:
         train_cam_infos = cam_infos
@@ -271,10 +270,17 @@ def readColmapSceneInfo(path, images, eval, model_path, llffhold=8, N_sparse = -
         ply_path = os.path.join(path, "colmap/sparse/0/points3D.ply")
         bin_path = os.path.join(path, "colmap/sparse/0/points3D.bin")
         txt_path = os.path.join(path, "colmap/sparse/0/points3D.txt")
-        try:
-            xyz, rgb, _ = read_points3D_binary(bin_path)
-        except:
-            xyz, rgb, _ = read_points3D_text(txt_path)
+        if train_lr:
+            # initialize from the COLMAP points seen by the input views only
+            ply_path = os.path.join(model_path, "points3D_input_views.ply")
+            xyz, rgb = read_points3D_binary_visible(bin_path, set(cam_extrinsics.keys()))
+            assert len(xyz) > 0, f"no COLMAP point is visible in the {len(cam_extrinsics)} input views of {path}"
+            print(f"Init from the {len(xyz)} points seen by {len(cam_extrinsics)} input views.")
+        else:
+            try:
+                xyz, rgb, _ = read_points3D_binary(bin_path)
+            except:
+                xyz, rgb, _ = read_points3D_text(txt_path)
         storePly(ply_path, xyz, rgb)
         try:
             pcd = fetchPly(ply_path)
@@ -293,7 +299,6 @@ def readColmapSceneInfo(path, images, eval, model_path, llffhold=8, N_sparse = -
         #     pcd = fetchPly(ply_path)
         # except:
         #     pcd = None
-
     scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,

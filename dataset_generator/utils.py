@@ -42,23 +42,10 @@ def bin_to_txt(scene_path):
 
 def select_lr_cams(scene_path, num_samples):
     cameras, images = read_model(path=os.path.join(scene_path, "colmap/sparse/0"), ext=".bin")
-    train_cam_infos = [c for idx, c in images.items()]
-    train_cam_infos_sorted = sorted(train_cam_infos.copy(), key=lambda x: x.name)
-
-    frame_gap = 50
-    if num_samples == 3 and num_samples * 50 < len(train_cam_infos_sorted):
-        frame_gap = 50
-    if ((frame_gap * num_samples) > len(train_cam_infos_sorted)):
-        frame_gap = 25
-    
-    # last level frame gap
-    if ((frame_gap * num_samples) > len(train_cam_infos_sorted)):
-        frame_gap = int(len(train_cam_infos_sorted) / num_samples)
-    
-    lr_train_cam_infos = []
-    for i in range(num_samples):
-        lr_train_cam_infos.append(train_cam_infos_sorted[i * frame_gap])
-    return cameras, {image.id: image for image in lr_train_cam_infos}
+    train_cam_infos_sorted = sorted(images.values(), key=lambda x: x.name)
+    step = max(1, len(train_cam_infos_sorted) // num_samples)
+    lr_train_cam_infos = train_cam_infos_sorted[::step][:num_samples]
+    return cameras, {img.id: img for img in lr_train_cam_infos}
 
 def uniform_sample_with_fixed_count(lst, count):
     if count <= 2:
@@ -100,7 +87,7 @@ def check_valid(scene_path):
     return True
 
 
-def train_lr(scene_path, output_path, num_sample, port, eval_mode=False):
+def train_lr(scene_path, output_path, num_sample, port, eval_mode=False, rand_init=False):
     output_path = os.path.join(output_path, 'lr', str(num_sample))
     train_cam_path = os.path.join(output_path, "sparse/0")
     os.makedirs(train_cam_path, exist_ok=True)
@@ -112,7 +99,9 @@ def train_lr(scene_path, output_path, num_sample, port, eval_mode=False):
     write_model(cameras, selected_images, train_cam_path, ext=".txt")
     
     common_args = " --quiet --test_iterations -1 "
-    train_cmd = "python train.py -s " + scene_path + " -i images_4 -m " + output_path +" --port "+ str(port) + common_args +f" --n_sparse {num_sample} --train_lr --rand_init"
+    train_cmd = "python train.py -s " + scene_path + " -i images_4 -m " + output_path +" --port "+ str(port) + common_args +f" --n_sparse {num_sample} --train_lr"
+    if rand_init:
+        train_cmd += " --rand_init"
     print(train_cmd)
     if os.path.exists(os.path.join(output_path, "point_cloud/iteration_30000/point_cloud.ply")):
         print(f"The inputs {num_sample} for {scene_path} has been created. Skip train")
@@ -305,6 +294,11 @@ def render_lr_hr_pairs(scene_path, lr_path, num_sample, use_lr):
         train_cam_infos = train_cam_infos_sorted
 
     selected_images = cam_selection(ref_train_cam_infos_sorted, train_cam_infos_sorted, True)
+    # skip COLMAP frames that have no image in images_4
+    selected_images = {
+        image_id: image for image_id, image in selected_images.items()
+        if os.path.exists(os.path.join(scene_path, "images_4", image.name.replace("_ref", "")))
+    }
     # rewrite_selected_images = cam_selection(ref_train_cam_infos_sorted, train_cam_infos_sorted, True)
     # interpolated_images = fit_trajectory(train_cam_infos, use_lr, num_sample)
 
@@ -321,11 +315,11 @@ def render_lr_hr_pairs(scene_path, lr_path, num_sample, use_lr):
 
 
 
-def train_render_gss(scene_path, output_path, num_samples, use_lr, port):
+def train_render_gss(scene_path, output_path, num_samples, use_lr, port, rand_init=False):
     # if check_valid(scene_path):
     #     print(f"{scene_path} is valid")
     for num_sample in num_samples:
-        lr_path = train_lr(scene_path, output_path, num_sample, port=port, eval_mode=False)
+        lr_path = train_lr(scene_path, output_path, num_sample, port=port, eval_mode=False, rand_init=rand_init)
         render_lr_hr_pairs(scene_path,lr_path, num_sample, use_lr)
     # else:
     #     print(f"{scene_path} is not valid")
